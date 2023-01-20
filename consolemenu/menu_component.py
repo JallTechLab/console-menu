@@ -5,6 +5,12 @@ except ImportError:
 
 from consolemenu.format import MenuStyle
 
+from colors import *
+
+def get_width(s):
+    if s > 127:
+        return 2
+    return 1
 
 def ansilen(s):
     """
@@ -232,13 +238,14 @@ class MenuComponent(object):
             return '<'
 
     def _format_content(self, content='', align='left'):
-        invisible_chars = len(content) - ansilen(content)
+        # remove color str which is invisible and get the actual len of content(wide char counts for 2)
+        len_visible_chars = sum(get_width(ord(ch)) for ch in strip_color(content))
+        len_invisible_chars = len(content) - len_visible_chars
         return '{lp}{text:{al}{width}}{rp}'.format(lp=' ' * self.padding.left,
                                                    rp=' ' * self.padding.right,
                                                    text=content, al=self._alignment_char(align),
                                                    width=(self.calculate_border_width() - self.padding.left -
-                                                          self.padding.right - 2 + invisible_chars))
-
+                                                          self.padding.right - 2 + len_invisible_chars))
 
 class MenuHeader(MenuComponent):
     """
